@@ -33,28 +33,32 @@ export function calcStayCost(ctx: BudgetContext): number {
 
 export function calcFoodCost(
   foodCosts: FoodCost[],
-  isSenior: boolean,
+  _isSenior: boolean,
   days: number,
-): { meals: { meal: string; cost: number }[]; totalPerDay: number } {
-  const pureVeg = isSenior;
-  const meals: { meal: string; cost: number }[] = [];
-
-  for (const mealType of ['breakfast', 'lunch', 'dinner']) {
-    const options = foodCosts.filter(
-      (f) => f.meal === mealType && (!pureVeg || f.pure_veg === pureVeg),
-    );
-    const fallback = foodCosts.filter((f) => f.meal === mealType);
-    const source = options.length > 0 ? options : fallback;
-    const cheapest = [...source].sort(
-      (a, b) => a.price_per_person - b.price_per_person,
-    )[0];
-    if (cheapest) {
-      meals.push({ meal: mealType, cost: cheapest.price_per_person });
-    }
+) {
+  if (foodCosts.length === 0) {
+    return {
+      meals: [],
+      totalPerDay: 0,
+    };
   }
 
-  const totalPerDay = meals.reduce((sum, m) => sum + m.cost, 0);
-  return { meals, totalPerDay };
+  const cheapest = [...foodCosts].sort(
+    (a, b) =>
+      a.cost_per_person_per_day - b.cost_per_person_per_day,
+  )[0];
+
+  const totalPerDay = Number(cheapest.cost_per_person_per_day) || 0;
+
+  return {
+    meals: [
+      {
+        meal: cheapest.daily_food_band || 'Daily food',
+        cost: totalPerDay,
+      },
+    ],
+    totalPerDay,
+  };
 }
 
 export function calcTransportCost(
