@@ -129,6 +129,20 @@ const activities: Activity[] = rawActivities.map((a) => ({
   senior_friendly: Boolean(a.senior_friendly ?? false),
   pure_veg_nearby: Boolean(a.pure_veg_nearby ?? false),
 }));
+        
+const foodCosts: FoodCost[] = rawFood.map((f) => ({
+  id: String(f.id ?? ''),
+  destination: String(f.destination ?? ''),
+  daily_food_band: String(f.daily_food_band ?? 'Standard'),
+  cost_per_person_per_day: Number(f.cost_per_person_per_day ?? 0),
+}));
+
+const transportCosts: TransportCost[] = rawTransport.map((t) => ({
+  id: String(t.id ?? ''),
+  destination: String(t.destination ?? ''),
+  mode: String(t.mode ?? 'Unknown'),
+  cost_per_person_per_day: Number(t.cost_per_person_per_day ?? 0),
+}));
 
         console.log(`[Dashboard] Fetched: ${stays.length} stays, ${activities.length} activities, ${foodCosts.length} food costs, ${transportCosts.length} transport costs`);
 
