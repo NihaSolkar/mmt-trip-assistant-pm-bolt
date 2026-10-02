@@ -268,11 +268,8 @@ export function planTrip(
   );
   const destTransport = catalogue.transportCosts.filter(
   (t) =>
-    typeof t.route === 'string' &&
-    (
-      t.route.includes(dest) ||
-      t.route.toLowerCase().includes(dest.toLowerCase())
-    ),
+    typeof t.destination === 'string' &&
+    t.destination.toLowerCase().trim() === dest.toLowerCase().trim(),
 );
 
   const warnings: string[] = [];
