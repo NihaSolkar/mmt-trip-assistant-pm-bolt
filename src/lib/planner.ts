@@ -304,13 +304,12 @@ export function planTrip(
     }
 
     if (pureVeg) {
-      const vegFood = destFoodCosts.filter((f) => f.pure_veg === true);
-      if (vegFood.length === 0) {
-        warnings.push(
-          `No pure-vegetarian food options found in ${dest} in the catalogue.`,
-        );
-      }
-    }
+  if (destFoodCosts.length === 0) {
+    warnings.push(
+      `No food cost data found in ${dest} in the catalogue.`,
+    );
+  }
+}
   }
 
   const userVibeTags = tokenizeVibe(req.vibe);
