@@ -27,18 +27,11 @@ export const fallbackActivities: Activity[] = [
 ];
 
 export const fallbackFoodCosts: FoodCost[] = [
-  { id: 'fc1', destination: 'Gokarna', meal: 'breakfast', price_per_person: 120, pure_veg: false },
-  { id: 'fc2', destination: 'Gokarna', meal: 'lunch', price_per_person: 200, pure_veg: false },
-  { id: 'fc3', destination: 'Gokarna', meal: 'dinner', price_per_person: 250, pure_veg: false },
-  { id: 'fc4', destination: 'Gokarna', meal: 'breakfast', price_per_person: 100, pure_veg: true },
-  { id: 'fc5', destination: 'Gokarna', meal: 'lunch', price_per_person: 180, pure_veg: true },
-  { id: 'fc6', destination: 'Gokarna', meal: 'dinner', price_per_person: 220, pure_veg: true },
-  { id: 'fc7', destination: 'Shirdi', meal: 'breakfast', price_per_person: 80, pure_veg: true },
-  { id: 'fc8', destination: 'Shirdi', meal: 'lunch', price_per_person: 150, pure_veg: true },
-  { id: 'fc9', destination: 'Shirdi', meal: 'dinner', price_per_person: 180, pure_veg: true },
-  { id: 'fc10', destination: 'Nashik', meal: 'breakfast', price_per_person: 100, pure_veg: true },
-  { id: 'fc11', destination: 'Nashik', meal: 'lunch', price_per_person: 180, pure_veg: true },
-  { id: 'fc12', destination: 'Nashik', meal: 'dinner', price_per_person: 220, pure_veg: true },
+  { id: 'fc1', destination: 'Gokarna', daily_food_band: 'Breakfast', cost_per_person_per_day: 100 },
+  { id: 'fc2', destination: 'Gokarna', daily_food_band: 'Lunch', cost_per_person_per_day: 180 },
+  { id: 'fc3', destination: 'Gokarna', daily_food_band: 'Dinner', cost_per_person_per_day: 220 },
+  { id: 'fc4', destination: 'Shirdi', daily_food_band: 'Daily meals', cost_per_person_per_day: 180 },
+  { id: 'fc5', destination: 'Nashik', daily_food_band: 'Daily meals', cost_per_person_per_day: 220 },
 ];
 
 export const fallbackTransportCosts: TransportCost[] = [
