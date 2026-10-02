@@ -120,9 +120,16 @@ export interface MinimumViableBudgetInput {
   pureVeg: boolean;
 }
 
-export function calcMinimumViableBudget(
-  input: MinimumViableBudgetInput,
-): number | null {
+export function calcMinimumViableBudget(input: {
+  stays: Stay[];
+  foodCosts: FoodCost[];
+  transportCosts: TransportCost[];
+  activities: Activity[];
+  nights: number;
+  partySize: number;
+  isSenior: boolean;
+  pureVeg: boolean;
+}) {
   const qualifyingStays = input.isSenior
     ? input.stays.filter(
         (s) => s.has_lift === true || s.ground_floor_only === true,
@@ -143,19 +150,22 @@ export function calcMinimumViableBudget(
     pureVeg: input.pureVeg,
   });
 
-  const foodOptions = input.isSenior
-    ? input.foodCosts.filter((f) => f.pure_veg === true)
-    : input.foodCosts;
-
-  if (foodOptions.length === 0 && input.isSenior) return null;
-
-  const dailyFood = foodOptions.length > 0
-    ? Math.min(...foodOptions.map((f) => f.price_per_person)) * 3
-    : 0;
+  const dailyFood =
+    input.foodCosts.length > 0
+      ? Math.min(
+          ...input.foodCosts.map(
+            (f) => Number(f.cost_per_person_per_day) || 0,
+          ),
+        )
+      : 0;
 
   const transportCost =
     input.transportCosts.length > 0
-      ? Math.min(...input.transportCosts.map((t) => t.price_per_person))
+      ? Math.min(
+          ...input.transportCosts.map(
+            (t) => Number(t.cost_per_person_per_day) || 0,
+          ),
+        )
       : 0;
 
   const qualifyingActivities = input.isSenior
@@ -165,10 +175,17 @@ export function calcMinimumViableBudget(
   const activityCost =
     qualifyingActivities.length > 0
       ? Math.min(
-          ...qualifyingActivities.map((a) => a.price_per_person),
+          ...qualifyingActivities.map(
+            (a) => Number(a.price_per_person) || 0,
+          ),
         )
       : 0;
 
-  const total = stayCost + dailyFood + transportCost + activityCost;
+  const total =
+    stayCost +
+    dailyFood +
+    transportCost +
+    activityCost;
+
   return Math.ceil(total / 100) * 100;
 }
