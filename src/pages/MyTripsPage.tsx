@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { navigate } from '@/lib/router';
 import { formatINR } from '@/lib/format';
+import { getAiExplanationVisibility } from '@/lib/planner';
 import type { Itinerary, TripData } from '@/types';
 import { MapPin, Calendar, Users, Wallet, Plus, ChevronRight, Compass, X, Bed, Utensils, Bus, Mountain } from 'lucide-react';
 
@@ -83,6 +84,18 @@ export default function MyTripsPage() {
               Budget shortfall: {formatINR(tripData.shortfall)} per person. Minimum viable: {formatINR(tripData.minimumViableBudget || 0)}.
             </div>
           )}
+
+          {/* AI Explanation review gate */}
+          {(() => {
+            const aiExp = (tripData as any)?.aiExplanation ?? null;
+            const gate = getAiExplanationVisibility(selectedTrip.review_status, aiExp);
+            return (
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                <p className="text-xs font-medium text-slate-500">AI Explanation</p>
+                <p className="text-xs text-slate-600 mt-0.5">{gate.displayText}</p>
+              </div>
+            );
+          })()}
 
           {/* Day tabs */}
           {tripData && (

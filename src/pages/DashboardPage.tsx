@@ -3,11 +3,10 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { formatINR } from '@/lib/format';
 import {
-  generateTrip,
-  getStayTransparencyFactors,
-  resolveDestination,
+  planTrip,
   type Catalogue,
-} from '@/lib/tripEngine';
+} from '@/lib/planner';
+import { runDevSelfTest } from '@/lib/selfTest';
 import { fallbackCatalogue } from '@/lib/fallbackData';
 import type { Stay, Activity, FoodCost, TransportCost, TripData, TripRequest } from '@/types';
 import {
@@ -122,6 +121,12 @@ export default function DashboardPage() {
     })();
   }, []);
 
+  useEffect(() => {
+    if (catalogue) {
+      runDevSelfTest(catalogue);
+    }
+  }, [catalogue]);
+
   const profileType = profile?.profile_type ?? 'friends';
   const isSenior = profileType === 'senior_pilgrim';
   console.log('[Dashboard] Rendering — profile:', profile?.email, 'profileType:', profile?.profile_type, 'resolved:', profileType, 'catalogue loaded:', !!catalogue, 'stays:', catalogue?.stays.length ?? 0);
@@ -134,7 +139,8 @@ export default function DashboardPage() {
       setCurrentRequest(req);
 
       setTimeout(() => {
-        const data = generateTrip(catalogue, req, profileType);
+        const data = planTrip(catalogue, req, profileType);
+        console.log('[Dashboard] Plan generated:', { rejected: data.rejected, days: data.days.length, totalPerPerson: data.totalPerPerson, shortfall: data.shortfall });
         setTripData(data);
         setActiveDay(1);
         setLoading(false);
@@ -160,7 +166,7 @@ export default function DashboardPage() {
     setSaving(true);
     setSaveMsg(null);
 
-    const dest = resolveDestination(currentRequest.destination);
+    const dest = currentRequest.destination;
     const startDate = new Date();
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + currentRequest.days - 1);
@@ -295,8 +301,38 @@ export default function DashboardPage() {
         {/* Trip results */}
         {tripData && !loading && (
           <>
+            {/* Rejection message */}
+            {tripData.rejected && tripData.rejectionMessage && (
+              <div className="p-4 rounded-xl bg-red-50 border border-red-200">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-red-800">Unable to Plan This Trip</p>
+                    <p className="text-xs text-red-600 mt-1">{tripData.rejectionMessage}</p>
+                    {tripData.minimumViableBudget !== null && (
+                      <p className="text-xs text-red-600 mt-1">
+                        Minimum viable budget: <strong>{formatINR(tripData.minimumViableBudget)}</strong> per person.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Limited stays notice */}
+            {tripData.limitedStays && !tripData.rejected && (
+              <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
+                <div className="flex items-start gap-2">
+                  <Info className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-700">
+                    We found only {tripData.limitedStaysCount} bookable stays in this destination.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Budget warning banner */}
-            {tripData.shortfall !== null && tripData.shortfall > 0 && (
+            {!tripData.rejected && tripData.shortfall !== null && tripData.shortfall > 0 && (
               <div className="p-4 rounded-xl bg-red-50 border border-red-200">
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
@@ -316,7 +352,7 @@ export default function DashboardPage() {
             )}
 
             {/* Budget OK banner */}
-            {tripData.shortfall === null && (
+            {!tripData.rejected && tripData.shortfall === null && (
               <div className="p-4 rounded-xl bg-green-50 border border-green-200">
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
@@ -332,12 +368,12 @@ export default function DashboardPage() {
             )}
 
             {/* Guardrail warnings */}
-            {tripData.warnings.length > 1 && (
+            {!tripData.rejected && tripData.warnings.length > 0 && (
               <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
                 <div className="flex items-start gap-2">
                   <Info className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
                   <div className="space-y-1">
-                    {tripData.warnings.slice(1).map((w, i) => (
+                    {tripData.warnings.map((w, i) => (
                       <p key={i} className="text-xs text-amber-700">{w}</p>
                     ))}
                   </div>
@@ -346,26 +382,27 @@ export default function DashboardPage() {
             )}
 
             {/* Day tabs */}
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {tripData.days.map((day) => (
-                <button
-                  key={day.day}
-                  onClick={() => setActiveDay(day.day)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                    activeDay === day.day
-                      ? 'bg-[#0A438B] text-white'
-                      : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  Day {day.day}
-                </button>
-              ))}
-            </div>
+            {!tripData.rejected && tripData.days.length > 0 && (
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {tripData.days.map((day) => (
+                  <button
+                    key={day.day}
+                    onClick={() => setActiveDay(day.day)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                      activeDay === day.day
+                        ? 'bg-[#0A438B] text-white'
+                        : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    Day {day.day}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Day detail */}
-            {tripData.days.map((day) => {
+            {!tripData.rejected && tripData.days.map((day) => {
               if (day.day !== activeDay) return null;
-              const budgetPerNight = (currentRequest?.budgetPerPerson || 10000) * 0.35;
               return (
                 <div key={day.day} className="space-y-4">
                   {/* Day summary */}
@@ -434,20 +471,15 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Why This Stay transparency tag */}
-                        <div className="mt-3 p-3 rounded-lg bg-[#0A438B]/5 border border-[#0A438B]/15">
-                          <div className="flex items-center gap-1.5 mb-2">
-                            <Info className="w-3.5 h-3.5 text-[#0A438B]" />
-                            <span className="text-xs font-semibold text-[#0A438B]">Why This Stay</span>
+                        {day.transparencyTag && (
+                          <div className="mt-3 p-3 rounded-lg bg-[#0A438B]/5 border border-[#0A438B]/15">
+                            <div className="flex items-center gap-1.5 mb-2">
+                              <Info className="w-3.5 h-3.5 text-[#0A438B]" />
+                              <span className="text-xs font-semibold text-[#0A438B]">Why This Stay</span>
+                            </div>
+                            <p className="text-xs text-slate-600">{day.transparencyTag}</p>
                           </div>
-                          <div className="space-y-1">
-                            {getStayTransparencyFactors(day.stay, budgetPerNight).map((factor, i) => (
-                              <div key={i} className="flex items-start gap-1.5 text-xs text-slate-600">
-                                <CheckCircle2 className="w-3 h-3 text-[#0A438B] flex-shrink-0 mt-0.5" />
-                                {factor}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
+                        )}
 
                         {/* Tags */}
                         <div className="flex flex-wrap gap-1.5 mt-3">
@@ -518,7 +550,8 @@ export default function DashboardPage() {
             })}
 
             {/* Grand total + save */}
-            <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
+            {!tripData.rejected && tripData.days.length > 0 && (
+              <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-semibold text-slate-700">Total Per Person</span>
                 <span className="text-lg font-bold text-[#E41D26]">{formatINR(tripData.totalPerPerson)}</span>
@@ -536,7 +569,8 @@ export default function DashboardPage() {
                   {saveMsg}
                 </p>
               )}
-            </div>
+              </div>
+            )}
           </>
         )}
 

@@ -65,11 +65,18 @@ export interface Itinerary {
 
 export interface DayPlan {
   day: number;
+  date: string | null;
   stay: Stay | null;
   activities: Activity[];
   food: { meal: string; cost: number }[];
   transport: { route: string; mode: string; cost: number } | null;
   perPersonCost: number;
+  stayCost: number;
+  foodCost: number;
+  transportCost: number;
+  activityCost: number;
+  transparencyTag: string | null;
+  restBlock: string | null;
 }
 
 export interface TripData {
@@ -79,6 +86,12 @@ export interface TripData {
   shortfall: number | null;
   minimumViableBudget: number | null;
   warnings: string[];
+  rejected: boolean;
+  rejectionMessage: string | null;
+  limitedStays: boolean;
+  limitedStaysCount: number | null;
+  aiExplanation: string | null;
+  aiExplanationVisible: boolean;
 }
 
 export interface TripRequest {
@@ -91,4 +104,6 @@ export interface TripRequest {
   curfew?: string;
   liftRequired?: boolean;
   slowPace?: boolean;
+  startDate?: string;
+  endDate?: string;
 }
