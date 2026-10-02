@@ -41,7 +41,7 @@ function isChain(stay: Stay): boolean {
 function isOffbeat(stay: Stay): boolean {
   return stay.type === 'hostel' || stay.type === 'homestay';
 }
-}
+
 
 export function rankStays(ctx: RankingContext): RankedStay[] {
   const {
