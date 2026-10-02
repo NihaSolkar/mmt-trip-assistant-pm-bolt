@@ -37,16 +37,15 @@ export interface Activity {
 export interface FoodCost {
   id: string;
   destination: string;
-  meal: string;
-  price_per_person: number;
-  pure_veg: boolean;
+  daily_food_band: string;
+  cost_per_person_per_day: number;
 }
 
 export interface TransportCost {
   id: string;
-  route: string;
+  destination: string;
   mode: string;
-  price_per_person: number;
+  cost_per_person_per_day: number;
 }
 
 export interface Itinerary {
