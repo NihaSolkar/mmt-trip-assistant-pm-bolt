@@ -95,10 +95,40 @@ export default function DashboardPage() {
         if (foodRes.error) console.error('[Dashboard] Error fetching food_costs:', foodRes.error.message);
         if (transportRes.error) console.error('[Dashboard] Error fetching transport_costs:', transportRes.error.message);
 
-        const stays = (staysRes.data as Stay[] | null) ?? [];
-        const activities = (activitiesRes.data as Activity[] | null) ?? [];
-        const foodCosts = (foodRes.data as FoodCost[] | null) ?? [];
-        const transportCosts = (transportRes.data as TransportCost[] | null) ?? [];
+        
+const rawStays = (staysRes.data ?? []) as Record<string, unknown>[];
+const rawActivities = (activitiesRes.data ?? []) as Record<string, unknown>[];
+const rawFood = (foodRes.data ?? []) as Record<string, unknown>[];
+const rawTransport = (transportRes.data ?? []) as Record<string, unknown>[];
+
+const stays: Stay[] = rawStays.map((s) => ({
+  id: String(s.id ?? ''),
+  name: String(s.name ?? 'Unnamed Stay'),
+  destination: String(s.destination ?? ''),
+  type: (s.type ?? 'hotel') as Stay['type'],
+  price_per_night: Number(s.price_per_night ?? 0),
+  vibe: Array.isArray(s.vibe_tags)
+    ? s.vibe_tags.join(', ')
+    : String(s.vibe ?? ''),
+  rating: Number(s.rating ?? 0),
+  distance_to_hub_km: Number(s.distance_to_hub_km ?? 0),
+  has_lift: Boolean(s.lift_verified ?? s.has_lift ?? false),
+  ground_floor_only: Boolean(s.ground_floor ?? s.ground_floor_only ?? false),
+  pure_veg_nearby: Boolean(s.pure_veg_nearby ?? false),
+  curfew: s.curfew == null ? null : String(s.curfew),
+  verified_offbeat: Boolean(s.verified_offbeat ?? false),
+}));
+
+const activities: Activity[] = rawActivities.map((a) => ({
+  id: String(a.id ?? ''),
+  name: String(a.name ?? 'Activity'),
+  destination: String(a.destination ?? ''),
+  category: String(a.category ?? a.effort_level ?? 'General'),
+  price_per_person: Number(a.price ?? a.price_per_person ?? 0),
+  duration_hours: Number(a.duration_hrs ?? a.duration_hours ?? 0),
+  senior_friendly: Boolean(a.senior_friendly ?? false),
+  pure_veg_nearby: Boolean(a.pure_veg_nearby ?? false),
+}));
 
         console.log(`[Dashboard] Fetched: ${stays.length} stays, ${activities.length} activities, ${foodCosts.length} food costs, ${transportCosts.length} transport costs`);
 
