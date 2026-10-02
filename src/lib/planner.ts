@@ -364,8 +364,7 @@ export function planTrip(
 
   const foodPlan = calcFoodCost(destFoodCosts, isSenior, req.days);
   const transportInfo = calcTransportCost(destTransport);
-  const dayActivities = pickActivities(destActivities, isSenior, pureVeg);
-  const activityCost = calcActivityCost(dayActivities);
+  const activityPool = pickActivities(destActivities, isSenior, pureVeg);
   const dailyFood = foodPlan.totalPerDay;
   const transportCost = transportInfo?.cost ?? 0;
 
