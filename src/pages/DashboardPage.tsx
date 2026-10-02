@@ -227,7 +227,7 @@ const transportCosts: TransportCost[] = rawTransport.map((t) => ({
       itinerary_json: tripData,
       total_cost_per_person: tripData.totalPerPerson,
       budget_status: tripData.shortfall !== null ? 'shortfall' : 'feasible',
-      review_status: 'saved',
+      review_status: 'Pending',
     });
 
     if (error) {
