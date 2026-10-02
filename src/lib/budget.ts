@@ -61,17 +61,18 @@ export function calcFoodCost(
   };
 }
 
-export function calcTransportCost(
-  transport: TransportCost[],
-): { route: string; mode: string; cost: number } | null {
+export function calcTransportCost(transport: TransportCost[]) {
   if (transport.length === 0) return null;
+
   const cheapest = [...transport].sort(
-    (a, b) => a.price_per_person - b.price_per_person,
+    (a, b) =>
+      a.cost_per_person_per_day - b.cost_per_person_per_day,
   )[0];
+
   return {
-    route: cheapest.route,
+    route: cheapest.destination,
     mode: cheapest.mode,
-    cost: cheapest.price_per_person,
+    cost: Number(cheapest.cost_per_person_per_day) || 0,
   };
 }
 
