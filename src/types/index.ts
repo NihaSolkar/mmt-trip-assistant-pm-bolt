@@ -52,15 +52,23 @@ export interface TransportCost {
 export interface Itinerary {
   id: string;
   user_id: string;
+  title: string | null;
   destination: string;
+  profile_type: string | null;
   start_date: string | null;
   end_date: string | null;
-  party_size: number;
-  per_person_budget: number | null;
-  profile_type: string | null;
-  trip_data: TripData | null;
+  party_size: number | null;
+  budget_per_person: number | null;
+  vibe_text: string | null;
+  itinerary_json: TripData | null;
+  why_this_stay_tags: string[] | null;
+  ai_explanation: string | null;
+  total_cost_per_person: number | null;
+  budget_status: string | null;
   review_status: string;
+  schema_version: number | null;
   created_at: string;
+  updated_at: string;
 }
 
 export interface DayPlan {

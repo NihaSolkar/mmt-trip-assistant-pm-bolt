@@ -40,7 +40,7 @@ export default function MyTripsPage() {
 
   // Detail view
   if (selectedTrip) {
-    const tripData = selectedTrip.trip_data as TripData;
+    const tripData = selectedTrip.itinerary_json as TripData;
     return (
       <div className="min-h-screen bg-slate-50 pb-20 md:pb-8">
         <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
@@ -65,7 +65,7 @@ export default function MyTripsPage() {
               </span>
               <span className="flex items-center gap-1">
                 <Wallet className="w-3.5 h-3.5" />
-                {formatINR(selectedTrip.per_person_budget || 0)} /person
+                {formatINR(selectedTrip.budget_per_person || 0)} /person
               </span>
             </div>
             <div className="mt-2">
@@ -233,7 +233,7 @@ export default function MyTripsPage() {
                       </span>
                       <span className="flex items-center gap-1">
                         <Wallet className="w-3 h-3" />
-                        {formatINR(trip.per_person_budget || 0)}/person
+                        {formatINR(trip.budget_per_person || 0)}/person
                       </span>
                     </div>
                   </div>

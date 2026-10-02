@@ -172,18 +172,23 @@ export default function DashboardPage() {
     endDate.setDate(endDate.getDate() + currentRequest.days - 1);
 
     const { error } = await supabase.from('itineraries').insert({
+      user_id: profile.id,
       destination: dest,
       start_date: startDate.toISOString().split('T')[0],
       end_date: endDate.toISOString().split('T')[0],
       party_size: currentRequest.partySize,
-      per_person_budget: currentRequest.budgetPerPerson,
+      budget_per_person: currentRequest.budgetPerPerson,
+      vibe_text: currentRequest.vibe ?? null,
       profile_type: profileType,
-      trip_data: tripData,
+      itinerary_json: tripData,
+      total_cost_per_person: tripData.totalPerPerson,
+      budget_status: tripData.shortfall !== null ? 'shortfall' : 'feasible',
       review_status: 'saved',
     });
 
     if (error) {
-      setSaveMsg('Failed to save trip. Please try again.');
+      console.error('[Dashboard] Failed to save itinerary:', error.message);
+      setSaveMsg(`Failed to save trip: ${error.message}`);
     } else {
       setSaveMsg('Trip saved to My Trips!');
     }
