@@ -39,7 +39,8 @@ function isChain(stay: Stay): boolean {
 }
 
 function isOffbeat(stay: Stay): boolean {
-  return stay.verified_offbeat || stay.type === 'hostel' || stay.type === 'homestay';
+  return stay.type === 'hostel' || stay.type === 'homestay';
+}
 }
 
 export function rankStays(ctx: RankingContext): RankedStay[] {
@@ -73,7 +74,9 @@ export function rankStays(ctx: RankingContext): RankedStay[] {
   );
 
   const scored = pool.map((stay) => {
-    const stayVibeTags = tokenize(stay.vibe);
+    const stayVibeTags = Array.isArray(stay.vibe_tags)
+  ? stay.vibe_tags
+  : tokenize(stay.vibe ?? null);
     const intentFit =
       userVibeTags.length === 0
         ? 0
