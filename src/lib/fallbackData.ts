@@ -35,14 +35,12 @@ export const fallbackFoodCosts: FoodCost[] = [
 ];
 
 export const fallbackTransportCosts: TransportCost[] = [
-  { id: 't1', route: 'Bangalore-Gokarna', mode: 'bus', price_per_person: 650 },
-  { id: 't2', route: 'Bangalore-Gokarna', mode: 'train', price_per_person: 500 },
-  { id: 't3', route: 'Mumbai-Shirdi', mode: 'bus', price_per_person: 500 },
-  { id: 't4', route: 'Mumbai-Shirdi', mode: 'train', price_per_person: 400 },
-  { id: 't5', route: 'Mumbai-Nashik', mode: 'bus', price_per_person: 400 },
-  { id: 't6', route: 'Mumbai-Nashik', mode: 'train', price_per_person: 350 },
-  { id: 't7', route: 'Shirdi-Nashik', mode: 'bus', price_per_person: 250 },
-  { id: 't8', route: 'Shirdi-Nashik', mode: 'train', price_per_person: 200 },
+  { id: 't1', destination: 'Gokarna', mode: 'Bus', cost_per_person_per_day: 500 },
+  { id: 't2', destination: 'Gokarna', mode: 'Train', cost_per_person_per_day: 400 },
+  { id: 't3', destination: 'Shirdi', mode: 'Bus', cost_per_person_per_day: 500 },
+  { id: 't4', destination: 'Shirdi', mode: 'Train', cost_per_person_per_day: 400 },
+  { id: 't5', destination: 'Nashik', mode: 'Bus', cost_per_person_per_day: 400 },
+  { id: 't6', destination: 'Nashik', mode: 'Train', cost_per_person_per_day: 350 },
 ];
 
 export const fallbackCatalogue = {
