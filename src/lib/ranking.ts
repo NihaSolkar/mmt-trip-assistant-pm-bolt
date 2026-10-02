@@ -57,11 +57,14 @@ export function rankStays(ctx: RankingContext): RankedStay[] {
   let pool = [...stays];
 
   if (isSenior) {
-    pool = pool.filter((s) => s.has_lift === true || s.ground_floor_only === true);
-  if (pureVeg) {
-    pool = pool.filter((s) => s.pure_veg_nearby === true);
-    }
-  }
+  pool = pool.filter(
+    (s) => s.has_lift === true || s.ground_floor_only === true
+  );
+}
+
+if (pureVeg) {
+  pool = pool.filter((s) => s.pure_veg_nearby === true);
+}
 
   if (noCurfew) {
     pool = pool.filter((s) => s.curfew === 'none' || s.curfew === null);
