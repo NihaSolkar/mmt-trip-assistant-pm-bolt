@@ -215,26 +215,67 @@ const transportCosts: TransportCost[] = rawTransport.map((t) => ({
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + currentRequest.days - 1);
 
-    const { error } = await supabase.from('itineraries').insert({
-      user_id: profile.id,
-      destination: dest,
-      start_date: startDate.toISOString().split('T')[0],
-      end_date: endDate.toISOString().split('T')[0],
-      party_size: currentRequest.partySize,
-      budget_per_person: currentRequest.budgetPerPerson,
-      vibe_text: currentRequest.vibe ?? null,
-      profile_type: profileType,
-      itinerary_json: tripData,
-      total_cost_per_person: tripData.totalPerPerson,
-      budget_status: tripData.shortfall !== null ? 'shortfall' : 'feasible',
-      review_status: 'Pending',
-    });
+    const { data: insertedRow, error } = await supabase
+      .from('itineraries')
+      .insert({
+        user_id: profile.id,
+        destination: dest,
+        start_date: startDate.toISOString().split('T')[0],
+        end_date: endDate.toISOString().split('T')[0],
+        party_size: currentRequest.partySize,
+        budget_per_person: currentRequest.budgetPerPerson,
+        vibe_text: currentRequest.vibe ?? null,
+        profile_type: profileType,
+        itinerary_json: tripData,
+        total_cost_per_person: tripData.totalPerPerson,
+        budget_status: tripData.shortfall !== null ? 'shortfall' : 'feasible',
+        review_status: 'Pending',
+      })
+      .select('id, created_at')
+      .single();
 
     if (error) {
       console.error('[Dashboard] Failed to save itinerary:', error.message);
       setSaveMsg(`Failed to save trip: ${error.message}`);
     } else {
       setSaveMsg('Trip saved to My Trips!');
+
+      const webhookUrl = import.meta.env.VITE_MAKE_ITINERARY_WEBHOOK_URL;
+      if (!webhookUrl) {
+        console.warn('[Dashboard] VITE_MAKE_ITINERARY_WEBHOOK_URL not set — skipping Make.com webhook.');
+      } else {
+        const daySummary = tripData.days
+          .map((d) =>
+            `Day ${d.day}: ${d.stay?.name ?? 'no stay'}${d.activities.length > 0 ? `; activities: ${d.activities.map((a) => a.name).join(', ')}` : ''}; ${formatINR(d.perPersonCost)}/person`,
+          )
+          .join(' | ');
+
+        const itinerarySummary = `${currentRequest.days}-day ${dest} trip for ${currentRequest.partySize} ${profileType === 'senior_pilgrim' ? 'senior pilgrims' : 'friends'}. ${daySummary}`;
+
+        const payload = {
+          itinerary_id: insertedRow?.id ?? null,
+          user_id: profile.id,
+          persona: profileType,
+          destination: dest,
+          start_date: startDate.toISOString().split('T')[0],
+          end_date: endDate.toISOString().split('T')[0],
+          party_size: currentRequest.partySize,
+          budget_per_person: currentRequest.budgetPerPerson,
+          total_cost_per_person: tripData.totalPerPerson,
+          budget_status: tripData.shortfall !== null ? 'shortfall' : 'feasible',
+          itinerary_summary: itinerarySummary,
+          review_status: 'Pending',
+          created_at: insertedRow?.created_at ?? new Date().toISOString(),
+        };
+
+        fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }).catch((err) => {
+          console.error('[Dashboard] Make.com webhook failed:', err);
+        });
+      }
     }
     setSaving(false);
   };
