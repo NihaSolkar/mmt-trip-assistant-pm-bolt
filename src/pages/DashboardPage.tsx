@@ -693,9 +693,11 @@ function EditDayForm({
 
 function parseChatInput(input: string): TripRequest {
   const lower = input.toLowerCase();
-  const destMatch = lower.match(/gokarna|shirdi|nashik/);
-  const destination = destMatch ? destMatch[0].charAt(0).toUpperCase() + destMatch[0].slice(1) : 'Gokarna';
-
+  const destMatch = lower.match(/\b(gokarna|shirdi|nashik|goa)\b/);
+  const destination = destMatch
+    ? destMatch[0].charAt(0).toUpperCase() + destMatch[0].slice(1)
+    : 'Unsupported Destination';
+  
   const daysMatch = lower.match(/(\d+)\s*days?/);
   const days = daysMatch ? parseInt(daysMatch[1]) : 3;
 
