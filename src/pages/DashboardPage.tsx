@@ -768,8 +768,26 @@ function parseChatInput(input: string): TripRequest {
   const daysMatch = lower.match(/(\d+)\s*-?\s*days?/);
   const days = daysMatch ? parseInt(daysMatch[1]) : 3;
 
-  const partyMatch = lower.match(/(\d+)\s*(friends?|people|persons?|seniors?|guests?)/);
-  const partySize = partyMatch ? parseInt(partyMatch[1]) : 2;
+  const partyMatch = lower.match(
+  /(\d+)\s*(friends?|people|persons?|seniors?|guests?|travellers?|travelers?)/,
+);
+
+let partySize = partyMatch ? parseInt(partyMatch[1]) : 2;
+
+if (!partyMatch) {
+  if (/\bsolo\b|\b1\s*(person|traveller|traveler)\b/.test(lower)) {
+    partySize = 1;
+  } else if (/\bcouple\b|\btwo of us\b|\b2\s*(people|persons|travellers?|travelers?)\b/.test(lower)) {
+    partySize = 2;
+  } else {
+    const groupMatch = lower.match(
+      /\b(?:family|group)\s+of\s+(\d+)\b/,
+    );
+    if (groupMatch) {
+      partySize = parseInt(groupMatch[1]);
+    }
+  }
+}
 
   const budgetMatch = lower.match(/₹\s*([0-9,]+)|rs\.?\s*([0-9,]+)|([0-9,]+)\s*rupees?/);
   const budgetStr = budgetMatch ? (budgetMatch[1] || budgetMatch[2] || budgetMatch[3]).replace(/,/g, '') : '10000';
