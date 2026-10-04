@@ -223,22 +223,33 @@ const transportCosts: TransportCost[] = rawTransport.map((t) => ({
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + currentRequest.days - 1);
 
+    const insertPayload = {
+      user_id: profile.id,
+      destination: dest,
+      start_date: startDate.toISOString().split('T')[0],
+      end_date: endDate.toISOString().split('T')[0],
+      party_size: currentRequest.partySize,
+      budget_per_person: currentRequest.budgetPerPerson,
+      vibe_text: currentRequest.vibe ?? null,
+      profile_type: persistedProfileType,
+      itinerary_json: tripData,
+      total_cost_per_person: tripData.totalPerPerson,
+      budget_status: tripData.shortfall !== null ? 'shortfall' : 'feasible',
+      review_status: 'Pending',
+    };
+
+    console.log('[Dashboard] Save diagnostics:', {
+      profile_id: profile.id,
+      profileType,
+      freshProfile_profile_type: freshProfile?.profile_type,
+      persistedProfileType,
+      insert_profile_type: insertPayload.profile_type,
+      insertPayload,
+    });
+
     const { data: insertedRow, error } = await supabase
       .from('itineraries')
-      .insert({
-        user_id: profile.id,
-        destination: dest,
-        start_date: startDate.toISOString().split('T')[0],
-        end_date: endDate.toISOString().split('T')[0],
-        party_size: currentRequest.partySize,
-        budget_per_person: currentRequest.budgetPerPerson,
-        vibe_text: currentRequest.vibe ?? null,
-        profile_type: persistedProfileType,
-        itinerary_json: tripData,
-        total_cost_per_person: tripData.totalPerPerson,
-        budget_status: tripData.shortfall !== null ? 'shortfall' : 'feasible',
-        review_status: 'Pending',
-      })
+      .insert(insertPayload)
       .select('id, created_at')
       .single();
 
