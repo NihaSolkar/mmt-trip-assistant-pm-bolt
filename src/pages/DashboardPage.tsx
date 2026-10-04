@@ -176,14 +176,15 @@ const transportCosts: TransportCost[] = rawTransport.map((t) => ({
   console.log('[Dashboard] Rendering — profile:', profile?.email, 'profileType:', profile?.profile_type, 'resolved:', profileType, 'catalogue loaded:', !!catalogue, 'stays:', catalogue?.stays.length ?? 0);
 
   const handleGenerate = useCallback(
-    (req: TripRequest) => {
+    (req: TripRequest, overrideProfileType?: string) => {
       if (!catalogue) return;
+      const effectiveProfileType = overrideProfileType ?? profileType;
       setLoading(true);
       setSaveMsg(null);
       setCurrentRequest(req);
 
       setTimeout(() => {
-        const data = planTrip(catalogue, req, profileType);
+        const data = planTrip(catalogue, req, effectiveProfileType);
         console.log('[Dashboard] Plan generated:', { rejected: data.rejected, days: data.days.length, totalPerPerson: data.totalPerPerson, shortfall: data.shortfall });
         setTripData(data);
         setActiveDay(1);
@@ -210,6 +211,13 @@ const transportCosts: TransportCost[] = rawTransport.map((t) => ({
     setSaving(true);
     setSaveMsg(null);
 
+    const { data: freshProfile } = await supabase
+      .from('profiles')
+      .select('profile_type')
+      .eq('id', profile.id)
+      .maybeSingle();
+    const persistedProfileType = freshProfile?.profile_type ?? profileType;
+
     const dest = currentRequest.destination;
     const startDate = new Date();
     const endDate = new Date();
@@ -225,7 +233,7 @@ const transportCosts: TransportCost[] = rawTransport.map((t) => ({
         party_size: currentRequest.partySize,
         budget_per_person: currentRequest.budgetPerPerson,
         vibe_text: currentRequest.vibe ?? null,
-        profile_type: profileType,
+        profile_type: persistedProfileType,
         itinerary_json: tripData,
         total_cost_per_person: tripData.totalPerPerson,
         budget_status: tripData.shortfall !== null ? 'shortfall' : 'feasible',
@@ -250,12 +258,12 @@ const transportCosts: TransportCost[] = rawTransport.map((t) => ({
           )
           .join(' | ');
 
-        const itinerarySummary = `${currentRequest.days}-day ${dest} trip for ${currentRequest.partySize} ${profileType === 'senior_pilgrim' ? 'senior pilgrims' : 'friends'}. ${daySummary}`;
+        const itinerarySummary = `${currentRequest.days}-day ${dest} trip for ${currentRequest.partySize} ${persistedProfileType === 'senior_pilgrim' ? 'senior pilgrims' : 'friends'}. ${daySummary}`;
 
         const payload = {
           itinerary_id: insertedRow?.id ?? null,
           user_id: profile.id,
-          persona: profileType,
+          persona: persistedProfileType,
           destination: dest,
           start_date: startDate.toISOString().split('T')[0],
           end_date: endDate.toISOString().split('T')[0],
@@ -282,9 +290,16 @@ const transportCosts: TransportCost[] = rawTransport.map((t) => ({
 
   const handleSwitchPersona = async () => {
     const newType = isSenior ? 'friends' : 'senior_pilgrim';
-    await supabase.from('profiles').update({ profile_type: newType }).eq('id', profile!.id);
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ profile_type: newType })
+      .eq('id', profile!.id);
+    if (updateError) {
+      console.error('[Dashboard] Failed to switch persona:', updateError.message);
+      return;
+    }
     await refreshProfile();
-    if (currentRequest) handleGenerate(currentRequest);
+    if (currentRequest) handleGenerate(currentRequest, newType);
   };
 
   const handleEditDay = (day: number, newBudget: number) => {
