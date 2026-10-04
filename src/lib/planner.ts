@@ -193,8 +193,7 @@ function pickActivities(
     }
   }
 
-  const maxActivities = isSenior ? 2 : 3;
-  return pool.slice(0, maxActivities);
+  return pool;
 }
 
 function buildTransparencyTag(
