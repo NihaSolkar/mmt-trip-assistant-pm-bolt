@@ -87,7 +87,7 @@ export default function MyTripsPage() {
 
           {/* AI Explanation review gate */}
           {(() => {
-            const aiExp = (tripData as any)?.aiExplanation ?? null;
+            const aiExp = selectedTrip.ai_explanation ?? null;
             const gate = getAiExplanationVisibility(selectedTrip.review_status, aiExp);
             return (
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
