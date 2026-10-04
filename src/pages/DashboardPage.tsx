@@ -765,7 +765,7 @@ function parseChatInput(input: string): TripRequest {
     ? destMatch[0].charAt(0).toUpperCase() + destMatch[0].slice(1)
     : 'Unsupported Destination';
   
-  const daysMatch = lower.match(/(\d+)\s*days?/);
+  const daysMatch = lower.match(/(\d+)\s*-?\s*days?/);
   const days = daysMatch ? parseInt(daysMatch[1]) : 3;
 
   const partyMatch = lower.match(/(\d+)\s*(friends?|people|persons?|seniors?|guests?)/);
