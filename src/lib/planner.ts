@@ -371,9 +371,17 @@ export function planTrip(
   const startDate = req.startDate ? new Date(req.startDate) : new Date();
 
   for (let day = 1; day <= req.days; day++) {
-    const dayActivities = activityPool.slice(
-  Math.floor(((day - 1) * activityPool.length) / req.days),
-  Math.floor((day * activityPool.length) / req.days),
+    const activitiesPerDay = Math.max(
+  1,
+  Math.ceil(activityPool.length / req.days),
+);
+
+const startIndex =
+  ((day - 1) * activitiesPerDay) % Math.max(activityPool.length, 1);
+
+const dayActivities = Array.from(
+  { length: Math.min(activitiesPerDay, activityPool.length) },
+  (_, index) => activityPool[(startIndex + index) % activityPool.length],
 );
 
 const activityCost = calcActivityCost(dayActivities);
