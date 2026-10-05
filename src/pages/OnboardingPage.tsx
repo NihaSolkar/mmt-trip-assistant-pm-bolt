@@ -52,12 +52,12 @@ export default function OnboardingPage() {
 
     try {
       const { error } = await supabase
-        .from('users')
-        .update({
-  profile_type: type,
-  display_name: type === 'friends' ? 'Kabir Sen' : 'Rameshwar Kulkarni',
-})
-        .eq('id', session!.user.id);
+  .from('users')
+  .update({
+    profile_type: type,
+    display_name: session!.user.email?.split('@')[0] ?? null,
+  })
+  .eq('id', session!.user.id);
 
       if (error) throw error;
       await refreshProfile();
