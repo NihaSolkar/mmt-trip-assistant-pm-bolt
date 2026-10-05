@@ -52,7 +52,7 @@ export default function OnboardingPage() {
 
     try {
       const { error } = await supabase
-        .from('profiles')
+        ..from('users')
         .update({ profile_type: type })
         .eq('id', session!.user.id);
 
