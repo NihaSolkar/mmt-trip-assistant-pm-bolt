@@ -53,7 +53,10 @@ export default function OnboardingPage() {
     try {
       const { error } = await supabase
         .from('users')
-        .update({ profile_type: type })
+        .update({
+  profile_type: type,
+  display_name: type === 'friends' ? 'Kabir Sen' : 'Rameshwar Kulkarni',
+})
         .eq('id', session!.user.id);
 
       if (error) throw error;
