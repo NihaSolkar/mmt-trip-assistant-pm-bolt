@@ -212,7 +212,7 @@ const transportCosts: TransportCost[] = rawTransport.map((t) => ({
     setSaveMsg(null);
 
     const { data: freshProfile } = await supabase
-      .from('profiles')
+  .from('users')
       .select('profile_type')
       .eq('id', profile.id)
       .maybeSingle();
