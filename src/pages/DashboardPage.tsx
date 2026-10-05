@@ -302,7 +302,7 @@ const transportCosts: TransportCost[] = rawTransport.map((t) => ({
   const handleSwitchPersona = async () => {
     const newType = isSenior ? 'friends' : 'senior_pilgrim';
     const { error: updateError } = await supabase
-      .from('profiles')
+  .from('users')
       .update({ profile_type: newType })
       .eq('id', profile!.id);
     if (updateError) {
